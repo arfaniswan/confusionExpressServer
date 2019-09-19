@@ -1,23 +1,37 @@
 var express = require('express');
-
-var passport = require('passport');
-var authenticate = require('../authenticate');
-
 const bodyParser = require('body-parser');
 var User = require('../models/user');
+var passport = require('passport');
+var authenticate = require('../authenticate');
 var router = express.Router();
 router.use(bodyParser.json());
 
-//signup:
+/* GET users listing. */
+router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  // res.send('respond with a resource');
+  console.log (req);
+  User.find({})
+    .then((users) => {
+      if(users){
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(users);
+      }
+    }, (err) => next(err))
+    .catch((err) => next(err));
+});
+
 router.post('/signup', (req, res, next) => {
-  User.register(new User({username: req.body.username}), 
-    req.body.password, (err, user) => {
-    if(err) {
+  // User.findOne({username: req.body.username})
+  //using register method for passport
+  User.register(new User({ username: req.body.username }), req.body.password, (err, user) => {
+    if (err) {
       res.statusCode = 500;
-      res.setHeader('Content-Type', 'application/json');
-      res.json({err: err});
+      res.setHeader('Content-Type', 'applicaation/json');
+      res.json({ err: err });
     }
     else {
+      //adding first name and last name of user to db
       if (req.body.firstname)
         user.firstname = req.body.firstname;
       if (req.body.lastname)
@@ -26,33 +40,35 @@ router.post('/signup', (req, res, next) => {
         if (err) {
           res.statusCode = 500;
           res.setHeader('Content-Type', 'application/json');
-          res.json({err: err});
+          res.json({ err: err });
           return ;
         }
         passport.authenticate('local')(req, res, () => {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
-          res.json({success: true, status: 'Registration Successful!'});
+          res.json({ success: true, status: 'Registration Successful!' });
         });
       });
     }
   });
+  
 });
-
-//login portion
 
 router.post('/login', passport.authenticate('local'), (req, res) => {
+  //creating a token
+  var token = authenticate.getToken({ _id: req.user._id });
 
-  var token = authenticate.getToken({_id: req.user._id});
+console.log(token);
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
-  res.json({success: true, token: token, status: 'You are successfully logged in!'});
-});
+  res.json({ success: true, token: token, status: 'Login Successful!' });
+ // console.log(res);
 
+ 
+})
 
-//logout
-
-router.get('/logout', (req, res) => {
+router.get('/logout', (req, res,next) => {
+  
   if (req.session) {
     req.session.destroy();
     res.clearCookie('session-id');
@@ -63,11 +79,6 @@ router.get('/logout', (req, res) => {
     err.status = 403;
     next(err);
   }
-});
-
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
 });
 
 module.exports = router;
