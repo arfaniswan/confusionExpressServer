@@ -85,3 +85,6 @@ exports.facebookPassport = passport.use(new FacebookTokenStrategy({
     });
 }
 ));
+
+
+//accessToken: "EAAh0njIo1qEBAHD9f6C9kwzZCDZAR2XOxWp1L8ZCCcwkXmP6VZAKwnKvKzC4yDKGReNAZCjtSEt8hjraJi5qJfZB6tR1mDtJgBFKsJVdMoMv0hGec6KgGOxCSJ5trbR5VGb6MYf5TTY4ndhcDAOhomjuXT9QsIV23P8ZAcarlMnR9BHUyg1bUbuA3nSGWRD1WAZD"
